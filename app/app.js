@@ -27,6 +27,25 @@ app.onDeviceReady = function()
 	// Here you can update the UI to say that
 	// the device (the phone/tablet) is ready
 	// to use BLE and other Cordova functions.
+	hyper.log("Creating Phoenix socket");
+	//var socket = new Socket("/socket", { params: { token: window.userToken } });
+	var socket = new Socket("/ws", {params: {userToken: "123"}})
+
+	socket.onError(function (err) { hyper.log("Error, sigh"+JSON.stringify(err))});
+	socket.onClose(function () { hyper.log("Close, sigh")});
+	hyper.log("Connecting");
+	socket.connect();
+	// Now that you are connected, you can join channels with a topic:
+	var channel = socket.channel("scan:public", {});
+	hyper.log("Joining");
+	channel.join().receive("ok", function (resp) {
+	  hyper.log("Joined successfully");
+	  hyper.log("Joined successfully " + JSON.stringify(resp));
+	}).receive("error", function (resp) {
+	  hyper.log("Unable!");
+	  hyper.log("Unable to join" + JSON.stringify(resp));
+	});
+	hyper.log("Joined");
 };
 
 // Start the scan. Call the callback function when a device is found.
