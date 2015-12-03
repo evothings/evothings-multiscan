@@ -2,7 +2,7 @@ defmodule Multiscan.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  # channel "rooms:*", Multiscan.RoomChannel
+  channel "scan:*", Multiscan.ScanChannel
 
   ## Transports
   transport :websocket, Phoenix.Transports.WebSocket
