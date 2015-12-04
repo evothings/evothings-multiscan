@@ -11,8 +11,8 @@ defmodule Multiscan.ScanChannel do
     {:error, %{reason: "unauthorized"}}
   end
 
-  def handle_in("scan:device", msg, socket) do
-    broadcast! socket, "scan:device", msg
+  def handle_in("scan:device", %{"body" => body}, socket) do
+    broadcast! socket, "scan:device", %{body: body}
     {:noreply, socket}
   end
 end

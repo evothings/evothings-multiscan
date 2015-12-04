@@ -49,7 +49,7 @@ app.onDeviceReady = function()
 	hyper.log("Joined");
 
 	// Also register a handler for added devices
-	channel.on("scan:device", function (msg) {
+	app.channel.on("scan:device", function (msg) {
 	  app.phoenixReceive(msg);
 	});
 };
@@ -82,16 +82,23 @@ app.startScan = function(callbackFun)
 };
 
 // Called when we get a device from Phoenix
-app.phoenixReceive = function(device)
+app.phoenixReceive = function(msg)
 {
 	// Insert the device into table of found devices.
+	var msg = JSON.parse(msg);
+	hyper.log("Got: " + msg);
+	var device = msg.body;
 	app.devices[device.address] = device;
 };
 
 // Send a device back to Phoenix
 app.phoenixSend = function(device)
 {
-	app.channel.push("scan:device", device)
+	hyper.log("Pushing: " + device);
+	app.channel.push("scan:device", {
+    user: "Arne",
+    body: device
+  })
 };
 
 // Stop scanning for devices.
@@ -123,12 +130,11 @@ app.ui.deviceFound = function(device, errorCode)
 {
 	if (device)
 	{
-		// Set timestamp for device (this is used to remove
-		// inactive devices).
+		// Set timestamp for device (this is used to remove inactive devices).
 		device.timeStamp = Date.now();
 
 		// Report device to Phoenix backend
-		app.phoenixSend(device);
+		app.phoenixSend(JSON.stringify(device));
 	}
 	else if (errorCode)
 	{
