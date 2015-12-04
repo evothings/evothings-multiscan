@@ -10,4 +10,9 @@ defmodule Multiscan.ScanChannel do
   def join("scan:" <> _private_scan_id, _params, _socket) do
     {:error, %{reason: "unauthorized"}}
   end
+
+  def handle_in("scan:device", msg, socket) do
+    broadcast! socket, "scan:device", msg
+    {:noreply, socket}
+  end
 end
