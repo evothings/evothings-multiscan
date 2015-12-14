@@ -1,4 +1,5 @@
 // JavaScript code for the BLE Scan example app.
+Phoenix = require('phoenix')
 
 // Application object.
 var app = {};
@@ -26,32 +27,34 @@ app.onDeviceReady = function()
 	// Here you can update the UI to say that
 	// the device (the phone/tablet) is ready
 	// to use BLE and other Cordova functions.
-	hyper.log("Creating Phoenix socket");
+	hyper.log("Creating Phoenix socket...");
 
 	// For this example I hard coded the host and port of my Phoenix application
-	var socket = new Socket("ws://padme.krampe.se:4000/socket", { params: { token: "dummy" } })
+	var socket = new Phoenix.Socket("wss://padme.krampe.se:1443/socket", { params: { token: "dummy" } })
 
 	// Nice with some logging in the Workbench when trying it all out
-	socket.onError(function (err) { hyper.log("Error Phoenix channel: "+JSON.stringify(err))});
-	socket.onClose(function () { hyper.log("Closed Phoenix channel")});
-	hyper.log("Connecting...");
+	socket.onError(function (err) { console.log("Error Phoenix channel: "+JSON.stringify(err))});
+	socket.onClose(function () { console.log("Closed Phoenix channel")});
+	console.log("Connecting...");
 	socket.connect();
 
 	// Now that we are connected we can join a channel with a topic.
 	// Let's join the topic 'scan:public'
 	app.channel = socket.channel("scan:public", {});
-	hyper.log("Joining");
+	console.log("Joining...");
 	app.channel.join().receive("ok", function (resp) {
-	  hyper.log("Joined successfully");
+	  console.log("Joined successfully");
 	}).receive("error", function (resp) {
-	  hyper.log("Unable to join");
+	  console.log("Unable to join");
 	});
-	hyper.log("Joined");
 
 	// Also register a handler for added devices
 	app.channel.on("scan:device", function (msg) {
 	  app.phoenixReceive(msg);
 	});
+
+	// And start updating list
+	app.ui.updateTimer = setInterval(app.ui.displayDeviceList, 500);
 };
 
 // Start the scan. Call the callback function when a device is found.
@@ -85,20 +88,16 @@ app.startScan = function(callbackFun)
 app.phoenixReceive = function(msg)
 {
 	// Insert the device into table of found devices.
-	var msg = JSON.parse(msg);
-	hyper.log("Got: " + msg);
-	var device = msg.body;
-	app.devices[device.address] = device;
+	app.devices[device.address] = JSON.parse(msg.body);
 };
 
 // Send a device back to Phoenix
 app.phoenixSend = function(device)
 {
-	hyper.log("Pushing: " + device);
 	app.channel.push("scan:device", {
     user: "Arne",
     body: device
-  })
+  });
 };
 
 // Stop scanning for devices.
@@ -112,7 +111,6 @@ app.ui.onStartScanButton = function()
 {
 	app.startScan(app.ui.deviceFound);
 	app.ui.displayStatus('Scanning...');
-	app.ui.updateTimer = setInterval(app.ui.displayDeviceList, 500);
 };
 
 // Called when Stop Scan button is selected.
@@ -122,7 +120,6 @@ app.ui.onStopScanButton = function()
 	app.devices = {};
 	app.ui.displayStatus('Scan Paused');
 	app.ui.displayDeviceList();
-	clearInterval(app.ui.updateTimer);
 };
 
 // Called when a device is found.
@@ -130,10 +127,10 @@ app.ui.deviceFound = function(device, errorCode)
 {
 	if (device)
 	{
-		// Set timestamp for device (this is used to remove inactive devices).
+		// Set timestamp for device, this is used to remove inactive devices.
 		device.timeStamp = Date.now();
 
-		// Report device to Phoenix backend
+		// Report device to Phoenix backend.
 		app.phoenixSend(JSON.stringify(device));
 	}
 	else if (errorCode)
