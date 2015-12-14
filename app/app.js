@@ -27,14 +27,19 @@ app.onDeviceReady = function()
 	// Here you can update the UI to say that
 	// the device (the phone/tablet) is ready
 	// to use BLE and other Cordova functions.
-	hyper.log("Creating Phoenix socket...");
+	console.log("Creating Phoenix socket...");
 
 	// For this example I hard coded the host and port of my Phoenix application
-	var socket = new Phoenix.Socket("wss://padme.krampe.se:1443/socket", { params: { token: "dummy" } })
+	var socket = new Phoenix.Socket("wss://padme.krampe.se:1443/socket",
+	                                { params: { token: "dummy" } })
 
 	// Nice with some logging in the Workbench when trying it all out
-	socket.onError(function (err) { console.log("Error Phoenix channel: "+JSON.stringify(err))});
-	socket.onClose(function () { console.log("Closed Phoenix channel")});
+	socket.onError(function (err) {
+	  console.log("Error Phoenix channel: "+JSON.stringify(err)
+	)});
+	socket.onClose(function () {
+	  console.log("Closed Phoenix channel")
+	});
 	console.log("Connecting...");
 	socket.connect();
 
