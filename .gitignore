@@ -1,3 +1,6 @@
+# Ignore cert
+/cert
+
 # App artifacts
 /_build
 /db
