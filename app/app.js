@@ -93,7 +93,8 @@ app.startScan = function(callbackFun)
 app.phoenixReceive = function(msg)
 {
 	// Insert the device into table of found devices.
-	app.devices[device.address] = JSON.parse(msg.body);
+	var device = JSON.parse(msg.body);
+	app.devices[device.address] = device;
 };
 
 // Send a device back to Phoenix
